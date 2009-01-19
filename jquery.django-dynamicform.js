@@ -12,14 +12,15 @@
             var obj = $(this);
             var add_link = '<a class="' + options.add_link_class + '" href="#">Add</a>';
             var remove_link = '<a class="' + options.remove_link_class + '" href="#">Remove</a>';
+            var link_wrapper = '<tr><td colspan="2"></td></tr>';
             
             // A more complete form should already have the add and remove buttons
             // and should handle them server-side, but here I'm adding the link            
-            obj.children(":last").append(add_link);
+            obj.children(":last").find('tr:last').after(add_link);
             
             // This wraps the first link in the correct element(s). It can probably
             // be adapted to account for form.as_p and form.as_ul
-            $('.' + options.add_link_class).wrap('<tr><td colspan="2"></td></tr>');
+            $('.' + options.add_link_class).wrap(link_wrapper);
             
             obj.click(function (e) {
                 e.preventDefault();
@@ -44,7 +45,6 @@
                 debug('addField() was executed.');
                 
                 clone = obj.children('table:last').clone(true);
-                clone.find('input')
                 obj.append(clone);
             }
             
@@ -73,8 +73,33 @@
                     $(formClass + ":last").find('.' + options.remove_link_class).before(add_link + ' ');
                 }
             }
+            
+            // ************************************************************ //
+            // THESE BITS COME FROM XIAN                                    //
+            // ************************************************************ //
+            
+            function clear_values (elem) {
+                $("input, textarea", elem).each(function () {
+                    this.value = "";
+                    this.checked = false;
+                    this.selected = "";
+                    $(this).empty();
+                });
+                return elem;
+            };
+            
+            function update_names_and_ids (elem, count_field) {
+                var find = '-' + (Number(count_field.attr('value')) - 1) + '-'
+                var replace = '-' + count_field.attr('value') + '-'
+                $("[id^='id_']", elem).each( function () {
+                    this.id  = this.id.replace(find, replace);
+                    this.name = this.name.replace(find, replace);
+                });
+                return elem;
+            };
         });
     }
+    
     
     function debug(obj) {
         if (window.console && window.console.log) {
