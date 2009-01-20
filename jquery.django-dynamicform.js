@@ -35,23 +35,26 @@
             });
             
             obj.bind('addField.dynamicform', addField);
-            obj.bind('addField.dynamicform', handleFieldUpdate);
-            
             obj.bind('removeField.dynamicform', removeField);
+            
+            obj.bind('addField.dynamicform', handleFieldUpdate);
             obj.bind('removeField.dynamicform', handleFieldUpdate);
+            
+            handleFieldUpdate();
             
             function addField(e) {
                 // Add a new field
                 debug('addField() was executed.');
                 
                 clone = obj.children('table:last').clone(true);
+                clear_values(clone);
                 obj.append(clone);
             }
             
             function removeField(e, target) {
                 // Remove a field
                 debug('removeField() was executed.');
-                debug(target);
+                // debug(target);
                 
                 $(target).parents('table').remove();
                 handleFieldUpdate();
@@ -62,8 +65,37 @@
                 debug('handleFieldUpdate() was executed.');
                 
                 formClass = '.' + $(obj).find('table').attr("class");
-                var forms = $(formClass).size();
-                debug(forms);
+                var forms = $(formClass).size();                
+                
+                // ***********************************************************
+                // UPDATE FUNCTIONS FOR DJANGO HIDDEN FORM FIELDS
+                // ***********************************************************
+                
+                // Increment the total form count.
+                $("input[id*=TOTAL_FORMS]").attr("value", forms);
+                
+                $(formClass).each(function(i) {
+                    // debug('Looping...' + i);
+                    
+                    var find = /(\-\d+\-)/;
+                    var replace = '-' + i + '-';
+                    
+                    // Loop over the id and name fields and increment the id.
+                    $("[id^='id_']").each(function() {
+                        this.id = this.id.replace(find, replace);
+                        this.name = this.name.replace(find, replace);
+                    });
+                    
+                    // Loop over the label fields and adjust their ids.
+                    $('.inline-form').find("[for^='id_']").each(function() {
+                        var for_value = $(this).attr("for");
+                        var new_value = for_value.replace(find, replace);
+                        $(this).attr("for", new_value);
+                        // debug(new_value);
+                    });
+                });
+                // ***********************************************************
+                
                 
                 if (forms == 1) {
                     $(formClass).find('tr:last > td').empty().append(add_link);
@@ -75,7 +107,7 @@
             }
             
             // ************************************************************ //
-            // THESE BITS COME FROM XIAN                                    //
+            // THIS BIT COMES FROM XIAN                                     //
             // ************************************************************ //
             
             function clear_values (elem) {
@@ -84,16 +116,6 @@
                     this.checked = false;
                     this.selected = "";
                     $(this).empty();
-                });
-                return elem;
-            };
-            
-            function update_names_and_ids (elem, count_field) {
-                var find = '-' + (Number(count_field.attr('value')) - 1) + '-'
-                var replace = '-' + count_field.attr('value') + '-'
-                $("[id^='id_']", elem).each( function () {
-                    this.id  = this.id.replace(find, replace);
-                    this.name = this.name.replace(find, replace);
                 });
                 return elem;
             };
@@ -107,9 +129,9 @@
         };
     }
     
-    function listEvents(elem) {
-        $(elem).listHandlers('*', function(e, d) {
-            console.info(e, d);
-        });
+    // function listEvents(elem) {
+    //     $(elem).listHandlers('*', function(e, d) {
+    //         console.info(e, d);
+    //     });
     }
 })(jQuery);
