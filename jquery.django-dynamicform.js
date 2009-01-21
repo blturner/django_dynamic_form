@@ -15,14 +15,20 @@
             var link_wrapper = '<tr><td colspan="2"></td></tr>';
             
             // A more complete form should already have the add and remove buttons
-            // and should handle them server-side, but here I'm adding the link            
-            obj.children(":last").find('tr:last').after(add_link);
+            // and should handle them server-side, but here I'm adding the link
+            
+            /*
+                When the form encounters an error, this line seems to be
+                inserting the first add link on top of the last input elment
+                in the first form field.
+            */
+            // obj.children("table:first").find('tr:last').css("background", "red");
+            // debug(obj.children("table:first"));
+            obj.children("table").find('tr:last').after(add_link);
             
             // This wraps the first link in the correct element(s). It can probably
             // be adapted to account for form.as_p and form.as_ul
             $('.' + options.add_link_class).wrap(link_wrapper);
-            
-            handleFieldUpdate();
             
             obj.click(function (e) {
                 e.preventDefault();
@@ -39,7 +45,9 @@
             obj.bind('addField.dynamicform', addField);
             obj.bind('removeField.dynamicform', removeField);
             
-            // obj.bind('addField.dynamicform', handleFieldUpdate);
+            handleFieldUpdate();
+            
+            obj.bind('addField.dynamicform', handleFieldUpdate);
             // obj.bind('removeField.dynamicform', handleFieldUpdate);
             
             function addField(e) {
@@ -48,6 +56,8 @@
                 
                 clone = obj.children('table:last').clone(true);
                 clear_values(clone);
+                clear_select_values(clone);
+                $(clone).find('.errorlist').remove();
                 obj.append(clone);
             }
             
@@ -109,7 +119,7 @@
                     $(formClass).find('tr:last > td').empty().append(add_link);
                 }
                 else {
-                    $(formClass).find('tr:last > td').empty().append(remove_link);
+                    $(formClass).find("tr:last td").empty().append(remove_link);
                     $(formClass + ":last").find('.' + options.remove_link_class).before(add_link + ' ');
                 }
             }
@@ -119,6 +129,7 @@
             // ************************************************************ //
             
             function clear_values (elem) {
+                debug('clear_values() was executed.');
                 $("input, textarea", elem).each(function () {
                     this.value = "";
                     this.checked = false;
@@ -127,6 +138,15 @@
                 });
                 return elem;
             };
+            
+            function clear_select_values (elem) {
+                debug('clear_select_values() was executed.');
+                $("select", elem).each(function () {
+                    debug(this);
+                    $(this).find('option:first').attr("selected", "selected");
+                });
+                return elem;
+            }
             
             function update_names_and_ids (elem, count_field) {
                 var find = '-' + (Number(count_field.attr('value')) - 1) + '-'
