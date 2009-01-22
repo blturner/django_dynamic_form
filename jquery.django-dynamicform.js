@@ -12,23 +12,6 @@
             var obj = $(this);
             var add_link = '<a class="' + options.add_link_class + '" href="#">Add</a>';
             var remove_link = '<a class="' + options.remove_link_class + '" href="#">Remove</a>';
-            var link_wrapper = '<tr><td colspan="2"></td></tr>';
-            
-            // A more complete form should already have the add and remove buttons
-            // and should handle them server-side, but here I'm adding the link
-            
-            /*
-                When the form encounters an error, this line seems to be
-                inserting the first add link on top of the last input elment
-                in the first form field.
-            */
-            // obj.children("table:first").find('tr:last').css("background", "red");
-            // debug(obj.children("table:first"));
-            obj.children("table").find('tr:last').after(add_link);
-            
-            // This wraps the first link in the correct element(s). It can probably
-            // be adapted to account for form.as_p and form.as_ul
-            $('.' + options.add_link_class).wrap(link_wrapper);
             
             obj.click(function (e) {
                 e.preventDefault();
@@ -47,9 +30,6 @@
             
             handleFieldUpdate();
             
-            obj.bind('addField.dynamicform', handleFieldUpdate);
-            // obj.bind('removeField.dynamicform', handleFieldUpdate);
-            
             function addField(e) {
                 // Add a new field
                 debug('addField() was executed.');
@@ -59,12 +39,12 @@
                 clear_select_values(clone);
                 $(clone).find('.errorlist').remove();
                 obj.append(clone);
+                handleFieldUpdate();
             }
             
             function removeField(e, target) {
                 // Remove a field
                 debug('removeField() was executed.');
-                // debug(target);
                 
                 $(target).parents('table').remove();
                 handleFieldUpdate();
@@ -76,20 +56,27 @@
                 
                 formClass = '.' + $(obj).find('table').attr("class");
                 var forms = $(formClass).size();
-                // debug('forms = ' + forms);
+                debug('forms = ' + forms);
                 
-                // UPDATE THE TOTAL_FORMS FIELD.
-                $(obj).find("input[id*=TOTAL_FORMS]").attr("value", forms); // This needs to be adapted to find the field for the specific class.
-                // debug($("input[id*=TOTAL_FORMS]").attr("value"));
+                var fields = obj.children(formClass);
+                var last = obj.children(formClass + ":last");
                 
+                fields.find('.form-controls').remove();
+                fields.find('tr:last').after('<tr class="form-controls"><td colspan="2"></td></tr>');
+                
+                if (fields.size() != 1) {
+                    fields.find('.form-controls td').append(remove_link + ' ');
+                }
+                last.find('.form-controls td').append(add_link);                
                 
                 // ***********************************************************
                 // UPDATE FUNCTIONS FOR DJANGO HIDDEN FORM FIELDS
-                // ***********************************************************
                 
-                $(formClass).each(function(i) {
+                $(obj).find("input[id*=TOTAL_FORMS]").attr("value", forms);
+                
+                obj.find(formClass).each(function(i) {
                     debug('Looping...' + i);
-                    debug(this);
+                    // debug(this);
                     
                     var find = /(\-\d+\-)/;
                     var replace = '-' + i + '-';
@@ -101,10 +88,6 @@
                         debug('Updating... ' + this);
                     });
                     
-                    // $(this).find("[for^='id_']").each(function() {
-                    //     debug(this);
-                    // });
-                    
                     $(this).find("[for^='id_']").each(function() {
                         var for_value = $(this).attr("for");
                         var new_value = for_value.replace(find, replace);
@@ -112,21 +95,7 @@
                         debug('Updating... ' + this);
                     });
                 });
-                // ***********************************************************
-                
-                
-                if (forms == 1) {
-                    $(formClass).find('tr:last > td').empty().append(add_link);
-                }
-                else {
-                    $(formClass).find("tr:last td").empty().append(remove_link);
-                    $(formClass + ":last").find('.' + options.remove_link_class).before(add_link + ' ');
-                }
             }
-            
-            // ************************************************************ //
-            // THESE BITS COME FROM XIAN                                    //
-            // ************************************************************ //
             
             function clear_values (elem) {
                 debug('clear_values() was executed.');
@@ -148,15 +117,15 @@
                 return elem;
             }
             
-            function update_names_and_ids (elem, count_field) {
-                var find = '-' + (Number(count_field.attr('value')) - 1) + '-'
-                var replace = '-' + count_field.attr('value') + '-'
-                $("[id^='id_']", elem).each( function () {
-                    this.id  = this.id.replace(find, replace);
-                    this.name = this.name.replace(find, replace);
-                });
-                return elem;
-            };
+            // function update_names_and_ids (elem, count_field) {
+            //     var find = '-' + (Number(count_field.attr('value')) - 1) + '-'
+            //     var replace = '-' + count_field.attr('value') + '-'
+            //     $("[id^='id_']", elem).each( function () {
+            //         this.id  = this.id.replace(find, replace);
+            //         this.name = this.name.replace(find, replace);
+            //     });
+            //     return elem;
+            // };
         });
     }
     
