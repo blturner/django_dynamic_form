@@ -79,7 +79,7 @@
                 // debug('forms = ' + forms);
                 
                 // UPDATE THE TOTAL_FORMS FIELD.
-                $("input[id*=TOTAL_FORMS]").attr("value", forms);
+                $(obj).find("input[id*=TOTAL_FORMS]").attr("value", forms); // This needs to be adapted to find the field for the specific class.
                 // debug($("input[id*=TOTAL_FORMS]").attr("value"));
                 
                 
