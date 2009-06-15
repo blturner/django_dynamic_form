@@ -32,8 +32,6 @@
             
             function addField(e) {
                 // Add a new field
-                debug('addField() was executed.');
-                
                 clone = obj.children('table:last').clone(true);
                 clear_values(clone);
                 clear_select_values(clone);
@@ -43,20 +41,14 @@
             }
             
             function removeField(e, target) {
-                // Remove a field
-                debug('removeField() was executed.');
-                
                 $(target).parents('table').remove();
                 handleFieldUpdate();
             }
             
             function handleFieldUpdate(e) {
                 // Handle what happens when a new field is created or removed.
-                debug('handleFieldUpdate() was executed.');
-                
                 formClass = '.' + $(obj).find('table').attr("class");
                 var forms = $(formClass).size();
-                debug('forms = ' + forms);
                 
                 var fields = obj.children(formClass);
                 var last = obj.children(formClass + ":last");
@@ -75,12 +67,9 @@
                 $(obj).find("input[id*=TOTAL_FORMS]").attr("value", forms);
                 
                 obj.find(formClass).each(function(i) {
-                    debug('Looping...' + i);
-                    // debug(this);
-                    
+                    debug('Looping...' + i);                    
                     var find = /(\-\d+\-)/;
                     var replace = '-' + i + '-';
-                    debug('var replace = ' + replace);
                     
                     $(this).find("[id^='id_']").each(function(i) {
                         this.id = this.id.replace(find, replace);
@@ -116,29 +105,12 @@
                 });
                 return elem;
             }
-            
-            // function update_names_and_ids (elem, count_field) {
-            //     var find = '-' + (Number(count_field.attr('value')) - 1) + '-'
-            //     var replace = '-' + count_field.attr('value') + '-'
-            //     $("[id^='id_']", elem).each( function () {
-            //         this.id  = this.id.replace(find, replace);
-            //         this.name = this.name.replace(find, replace);
-            //     });
-            //     return elem;
-            // };
         });
     }
-    
     
     function debug(obj) {
         if (window.console && window.console.log) {
             window.console.log(obj);
         };
-    }
-    
-    function listEvents(elem) {
-        $(elem).listHandlers('*', function(e, d) {
-            console.info(e, d);
-        });
     }
 })(jQuery);
